@@ -25,14 +25,14 @@ git push origin v1.0.0
 
 ### Step 2 - Create GPG Key
 
-One of the [requirements](https://central.sonatype.org/publish/requirements/) for publishing our artifacts to the 
-Central Repository, is that they have been signed with PGP. [GnuPG or GPG](http://www.gnupg.org/) is a freely available 
-implementation of the OpenPGP standard. GPG provides us with the capability to generate a signature, manage keys, and 
+One of the [requirements](https://central.sonatype.org/publish/requirements/) for publishing our artifacts to the
+Central Repository, is that they have been signed with PGP. [GnuPG or GPG](http://www.gnupg.org/) is a freely available
+implementation of the OpenPGP standard. GPG provides us with the capability to generate a signature, manage keys, and
 verify signatures.
 
 #### Installing GnuPG
 
-[Download the binary of GnuPG](https//www.gnupg.org/download/) or install it with our favorite package manager and 
+[Download the binary of GnuPG](https//www.gnupg.org/download/) or install it with our favorite package manager and
 verify it by running a gpg command with the `--version` flag
 
 ```console
@@ -55,14 +55,14 @@ Compression: Uncompressed, ZIP, ZLIB, BZIP2
 
 #### Generating a Key Pair
 
-A key pair allows us to sign artifacts with GPG and users can subsequently validate that artifacts have been signed by 
+A key pair allows us to sign artifacts with GPG and users can subsequently validate that artifacts have been signed by
 us. We can generate a key with:
 
 ```console
 gpg --gen-key
 ```
 
-Enter our name and email when asked for it and also, the time of validity for the key defaults to 2 years. Once they 
+Enter our name and email when asked for it and also, the time of validity for the key defaults to 2 years. Once they
 key is expired we can extend it, provided we own the key and therefore know the passphrase.
 
 ```console
@@ -100,9 +100,9 @@ uid                      Central Repo Test <central@example.com>
 sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
 ```
 
-We have to provide our name and email. These identifiers are essential as they will be seen by anyone downloading a 
-software artifact and validating a signature. Finally, we must provide a **passphrase** to protect our secret key. It 
-is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and **gpg's 
+We have to provide our name and email. These identifiers are essential as they will be seen by anyone downloading a
+software artifact and validating a signature. Finally, we must provide a **passphrase** to protect our secret key. It
+is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and **gpg's
 private key** are all that is needed to sign artifacts with our signature.
 
 **[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
@@ -119,9 +119,9 @@ uid           [ultimate] Central Repo Test <central@example.com>
 sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
 ```
 
-The output displays the path to the public keyring file. The line starting with `pub` shows the size (rsa3072), the 
-**keyid** (`CA925CD6C9E8D064FF05B4728190C4130ABA0F98`), and the creation date (2023-06-23) of the public key. Some 
-values may vary depending on our GnuPG version, but we will definitely see the keyid or part of it (called shortID, 
+The output displays the path to the public keyring file. The line starting with `pub` shows the size (rsa3072), the
+**keyid** (`CA925CD6C9E8D064FF05B4728190C4130ABA0F98`), and the creation date (2023-06-23) of the public key. Some
+values may vary depending on our GnuPG version, but we will definitely see the keyid or part of it (called shortID,
 last 8 characters of the keyid, in this example `0ABA0F98`, which we can ask gpg to output using
 `gpg --list-keys --keyid-format short`).
 
@@ -137,7 +137,7 @@ gpg --output private.pgp --armor --export-secret-key CA925CD6C9E8D064FF05B472819
 
 ### Step 3 - Obtaining Maven Central Credentials
 
-It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials. 
+It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials.
 We can get these credentials by generating a user token via the [Account page](https://central.sonatype.com/account).
 
 **[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
@@ -145,18 +145,18 @@ We can get these credentials by generating a user token via the [Account page](h
 
 ### Step 4 - Preparing POM File
 
-As part of the deployment, we are required to submit a POM file. This is the Project Object Model file used by Apache 
+As part of the deployment, we are required to submit a POM file. This is the Project Object Model file used by Apache
 Maven to define our project and its build. When building with other tools we have to assemble it and ensure it contains
 the following information.
 
-- **Correct Coordinates**: The project coordinates, also known as GAV, coordinates determine the location of your 
+- **Correct Coordinates**: The project coordinates, also known as GAV, coordinates determine the location of your
   project in the repository. The values are
 
   - `groupId`: the top level namespace level for our project starting with the reverse domain name
   - `artifactId`: the unique *name* for our artifact
   - `version`: the version string for our artifact
 
-  The version can be an arbitrary string and can not end in `-SNAPSHOT`, since this is the reserved string used to 
+  The version can be an arbitrary string and can not end in `-SNAPSHOT`, since this is the reserved string used to
   identify versions that are currently in development. We must use [semantic versioning](http://semver.org) such as
   1.0.0
 
@@ -168,7 +168,7 @@ the following information.
   <version>1.4.7</version>
   ```
 
-- **Project Name, Description and URL**: For some human-readable information about our project and a pointer to our 
+- **Project Name, Description and URL**: For some human-readable information about our project and a pointer to our
   project website for more, we need the presence of `name`, `description`, and `url`:
 
   ```xml
@@ -178,8 +178,8 @@ the following information.
   </description>
   <url>http://www.example.com/example-application</url>
   ```
-  
-- **License Information** - We need to declare the license(s) used for distributing our artifacts. E.g. if we use the 
+
+- **License Information** - We need to declare the license(s) used for distributing our artifacts. E.g. if we use the
   Apache License we can use
 
   ```xml
@@ -191,7 +191,7 @@ the following information.
       </license>
   </licenses>
   ```
-  
+
 - **Developer Information** - In order to be able to associate the project it is required to add a developers section.
 
   ```xml
@@ -251,7 +251,7 @@ the following information.
         <url>https://github.com/paion-data/athena.git</url>
         <tag>HEAD</tag>
     </scm>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -286,7 +286,7 @@ the following information.
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>release</id>
@@ -334,9 +334,9 @@ the following information.
 
 > [!NOTE]
 > Note that we've configured project above to use the [central-publishing-maven-plugin] and [Apache Maven GPG Plugin].
-> 
-> In addition, projects with packaging other than pom have to supply JAR files that contain Javadoc and sources. This 
-> allows the consumers of our artifacts to automatic access to Javadoc and sources for browsing as well as for display 
+>
+> In addition, projects with packaging other than pom have to supply JAR files that contain Javadoc and sources. This
+> allows the consumers of our artifacts to automatic access to Javadoc and sources for browsing as well as for display
 > and navigation e.g. in their IDE.
 
 ### Step 5 - Defining Action File
@@ -354,7 +354,7 @@ name: My App CI/CD
     branches:
       - master
 
-jobs:  
+jobs:
   release:
     name: Release
     if: github.ref == 'refs/heads/master'

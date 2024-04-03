@@ -56,7 +56,7 @@ runs:
       run: |
         git config --global user.name ${{ inputs.user }}
         git config --global user.email ${{ inputs.email }}
-        
+
         git clone https://github.com/QubitPi/maven-central-release-action.git ../maven-central-release-action
         cp ../maven-central-release-action/tag-for-release.bash .github/
         cp ../maven-central-release-action/upversion.py .github/
