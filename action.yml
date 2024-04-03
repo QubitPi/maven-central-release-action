@@ -19,59 +19,90 @@ branding:
   color: "green"
 
 inputs:
-  hashicorp-dir:
-    description: "path to directory that contains the standard HashiCorp 'images'/'instances'/'scripts' folders; must NOT end with '/'"
+  user:
+    description: The username of the GitHub user who has write access to push tags
     required: true
-  aws-access-key-id:
-    description: "AWS Access Key ID"
+  email:
+    description: The emails linked to the user on GitHub
     required: true
-  aws-secret-access-key:
-    description: "AWS Secrete Access Key"
+  server-id:
+    description: ID of the distributionManagement repository in the pom.xml file
     required: true
-  aws-region:
-    description: "The region in which the access key ID and Secret access key are valid"
+  gpg-private-key:
+    description: GPG private key to import
+    required: true
+  gpg-passphrase:
+    description: Environment variable name for the GPG private key passphrase
+    required: true
+  server-username:
+    description: Maven Central token username
+    required: true
+  server-password:
+    description: Maven Central token password
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+    - name: Bump Semantic Version
+      if: github.ref == 'refs/heads/master'
+      uses: QubitPi/hashicorp-aws/.github/workflows/version-bump.yml@master
       with:
-        aws-access-key-id: ${{ inputs.aws-access-key-id }}
-        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
-        aws-region: ${{ inputs.aws-region }}
+        user: ${{ inputs.user }}
+        email: ${{ inputs.email }}
 
-    - name: Setup HashiCorp Packer
-      uses: hashicorp/setup-packer@main
+    - name: Set up Java
+      uses: actions/setup-java@v3
       with:
-        version: "latest"
-    - name: Initialize Packer configuration
-      shell: bash
-      run: packer init .
-      working-directory: ${{ inputs.hashicorp-dir }}/images
-    - name: Validate Packer template
-      shell: bash
-      run: packer validate -var "skip_create_ami=true" .
-      working-directory: ${{ inputs.hashicorp-dir }}/images
-    - name: Build and publish AMI image
-      shell: bash
-      run: packer build -var "skip_create_ami=false" .
-      working-directory: ${{ inputs.hashicorp-dir }}/images
+        java-version: '17'
+        distribution: 'adopt'
+        server-id: ${{ inputs.server-id }}
+        settings-path: ${{ github.workspace }}
+        gpg-private-key: ${{ inputs.gpg-private-key }}
+        gpg-passphrase: ${{ inputs.gpg-passphrase }}
+        server-username: ${{ inputs.server-username }}
+        server-password: ${{ inputs.server-password }}
 
-    - name: Setup HashiCorp Terraform
-      uses: hashicorp/setup-terraform@v2
+    - name: Prepare GPG
+      run: |
+        mkdir -p ~/.gnupg/
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        gpgconf --reload gpg-agent
+      shell: bash
+
+    - name: Configure settings.xml for Maven Central release
+      uses: whelk-io/maven-settings-xml-action@v20
       with:
-        terraform_version: "latest"
-    - name: Initialize Terraform configuration
+        servers: >
+          [
+            {
+              "id": "${{ inputs.server-id }}",
+              "username": "${{ inputs.server-username }}",
+              "password": "${{ inputs.server-password }}",
+              "passphrase": "${{ inputs.gpg-passphrase }}"
+            }
+          ]
+        profiles: >
+          [
+            {
+              "id": "${{ inputs.server-id }}",
+              "properties": {
+                "gpg.keyname": "${{ inputs.server-id }}"
+              },
+              "activation": {
+                "activeByDefault": "true"
+              }
+            }
+          ]
+
+    - name: Bump version
+      run: |
+        git pull
+        VERSION=$(git describe)
+        echo "INFO Last tag: $VERSION"
+        mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
+        mvn versions:update-property -Dproperty=version.athena -DnewVersion=$VERSION -DgenerateBackupPoms=false
       shell: bash
-      run: terraform init
-      working-directory: ${{ inputs.hashicorp-dir }}/instances
-    - name: Validate Terraform template
+    - name: Release
+      run: mvn clean deploy -P release -DskipTests
       shell: bash
-      run: terraform validate
-      working-directory: ${{ inputs.hashicorp-dir }}/instances
-    - name: Create EC2 instance
-      shell: bash
-      run: terraform apply -auto-approve
-      working-directory: ${{ inputs.hashicorp-dir }}/instances
