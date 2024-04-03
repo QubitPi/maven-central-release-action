@@ -44,12 +44,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Bump Semantic Version
-      if: github.ref == 'refs/heads/master'
-      uses: QubitPi/hashicorp-aws/.github/workflows/version-bump.yml@master
+    - uses: actions/checkout@v3
       with:
-        user: ${{ inputs.user }}
-        email: ${{ inputs.email }}
+        fetch-depth: 0
+    - name: Tag for release
+      run: |
+        git config --global user.name ${{ inputs.user }}
+        git config --global user.email ${{ inputs.email }}
+        tag-for-release.bash
+      shell: bash
 
     - name: Set up Java
       uses: actions/setup-java@v3
