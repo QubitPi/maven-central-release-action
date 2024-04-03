@@ -1,2 +1,398 @@
 Maven Central Release Action
 ============================
+
+[![GitHub Actions Marketplace][GitHub Actions Marketplace badge]][GitHub Actions Marketplace URL]
+[![GitHub Workflow Status][GitHub Workflow Status badge]][GitHub Workflow Status URL]
+[![Apache License][Apache License badge]][Apache License URL]
+
+Deploying Maven Artifacts to Maven Central in One Action
+--------------------------------------------------------
+
+**Maven Central Release Action** offers a convenient "one-click" approach for publishing artifacts to
+[Maven Central](https://central.sonatype.com/)
+
+How to Use Maven Central Release Action
+---------------------------------------
+
+### Step 1 - Push Tag
+
+Manually create the first tag. For example, `v1.0.0`:
+
+```console
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
+
+### Step 2 - Create GPG Key
+
+One of the [requirements](https://central.sonatype.org/publish/requirements/) for publishing our artifacts to the 
+Central Repository, is that they have been signed with PGP. [GnuPG or GPG](http://www.gnupg.org/) is a freely available 
+implementation of the OpenPGP standard. GPG provides us with the capability to generate a signature, manage keys, and 
+verify signatures.
+
+#### Installing GnuPG
+
+[Download the binary of GnuPG](https//www.gnupg.org/download/) or install it with our favorite package manager and 
+verify it by running a gpg command with the `--version` flag
+
+```console
+$ gpg --version
+gpg (GnuPG) 2.2.19
+libgcrypt 1.8.5
+Copyright (C) 2019 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Home: /home/mylocaluser/.gnupg
+Supported algorithms:
+Pubkey: RSA, ELG, DSA, ECDH, ECDSA, EDDSA
+Cipher: IDEA, 3DES, CAST5, BLOWFISH, AES, AES192, AES256, TWOFISH,
+        CAMELLIA128, CAMELLIA192, CAMELLIA256
+Hash: SHA1, RIPEMD160, SHA256, SHA384, SHA512, SHA224
+Compression: Uncompressed, ZIP, ZLIB, BZIP2
+```
+
+#### Generating a Key Pair
+
+A key pair allows us to sign artifacts with GPG and users can subsequently validate that artifacts have been signed by 
+us. We can generate a key with:
+
+```console
+gpg --gen-key
+```
+
+Enter our name and email when asked for it and also, the time of validity for the key defaults to 2 years. Once they 
+key is expired we can extend it, provided we own the key and therefore know the passphrase.
+
+```console
+$ gpg --gen-key
+gpg (GnuPG) 2.2.19; Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Note: Use "gpg --full-generate-key" for a full featured key generation dialog.
+
+GnuPG needs to construct a user ID to identify your key.
+
+Real name: Central Repo Test
+Email address: central@example.com
+You selected this USER-ID:
+    "Central Repo Test <central@example.com>"
+
+Change (N)ame, (E)mail, or (O)kay/(Q)uit? O
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+We need to generate a lot of random bytes. It is a good idea to perform
+some other action (type on the keyboard, move the mouse, utilize the
+disks) during the prime generation; this gives the random number
+generator a better chance to gain enough entropy.
+gpg: key 8190C4130ABA0F98 marked as ultimately trusted
+gpg: revocation certificate stored as
+'/home/mylocaluser/.gnupg/openpgp-revocs.d/CA925CD6C9E8D064FF05B4728190C4130ABA0F98.rev'
+public and secret key created and signed.
+
+pub   rsa3072 2021-06-23 [SC] [expires: 2023-06-23]
+      CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+uid                      Central Repo Test <central@example.com>
+sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
+```
+
+We have to provide our name and email. These identifiers are essential as they will be seen by anyone downloading a 
+software artifact and validating a signature. Finally, we must provide a **passphrase** to protect our secret key. It 
+is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and **gpg's 
+private key** are all that is needed to sign artifacts with our signature.
+
+**[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
+
+To export the private key, list it along with any other keys installed:
+
+```console
+$ gpg --list-keys
+/home/mylocaluser/.gnupg/pubring.kbx
+---------------------------------
+pub   rsa3072 2021-06-23 [SC] [expires: 2023-06-23]
+      CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+uid           [ultimate] Central Repo Test <central@example.com>
+sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
+```
+
+The output displays the path to the public keyring file. The line starting with `pub` shows the size (rsa3072), the 
+**keyid** (`CA925CD6C9E8D064FF05B4728190C4130ABA0F98`), and the creation date (2023-06-23) of the public key. Some 
+values may vary depending on our GnuPG version, but we will definitely see the keyid or part of it (called shortID, 
+last 8 characters of the keyid, in this example `0ABA0F98`, which we can ask gpg to output using
+`gpg --list-keys --keyid-format short`).
+
+The next line shows the UID of the key, which is composed of a name, a comment, and an email.
+
+Next we [export an ascii armored version of the private key](https://unix.stackexchange.com/a/482559/437808):
+
+```console
+gpg --output private.pgp --armor --export-secret-key CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+```
+
+**[Create a GitHub Secret] named *GPG_PRIVATE_KEY* whose value is the entire output the command above**
+
+### Step 3 - Obtaining Maven Central Credentials
+
+It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials. 
+We can get these credentials by generating a user token via the [Account page](https://central.sonatype.com/account).
+
+**[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
+**[Create a GitHub Secret] named *MAVEN_CENTRAL_TOKEN* whose value is the token password**
+
+### Step 4 - Preparing POM File
+
+As part of the deployment, we are required to submit a POM file. This is the Project Object Model file used by Apache 
+Maven to define our project and its build. When building with other tools we have to assemble it and ensure it contains
+the following information.
+
+- **Correct Coordinates**: The project coordinates, also known as GAV, coordinates determine the location of your 
+  project in the repository. The values are
+
+  - `groupId`: the top level namespace level for our project starting with the reverse domain name
+  - `artifactId`: the unique *name* for our artifact
+  - `version`: the version string for our artifact
+
+  The version can be an arbitrary string and can not end in `-SNAPSHOT`, since this is the reserved string used to 
+  identify versions that are currently in development. We must use [semantic versioning](http://semver.org) such as
+  1.0.0
+
+  A valid example is
+
+  ```xml
+  <groupId>com.example.applications</groupId>
+  <artifactId>example-application</artifactId>
+  <version>1.4.7</version>
+  ```
+
+- **Project Name, Description and URL**: For some human-readable information about our project and a pointer to our 
+  project website for more, we need the presence of `name`, `description`, and `url`:
+
+  ```xml
+  <name>Example Application</name>
+  <description>
+      A application used as an example on how to set up pushing its components to the Central Repository.
+  </description>
+  <url>http://www.example.com/example-application</url>
+  ```
+  
+- **License Information** - We need to declare the license(s) used for distributing our artifacts. E.g. if we use the 
+  Apache License we can use
+
+  ```xml
+  <licenses>
+      <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+      </license>
+  </licenses>
+  ```
+  
+- **Developer Information** - In order to be able to associate the project it is required to add a developers section.
+
+  ```xml
+  <developers>
+      <developer>
+          <name>Jiaqi Liu</name>
+          <url>https://github.com/QubitPi</url>
+      </developer>
+  </developers>
+  ```
+
+- **SCM Information**
+
+  ```xml
+  <scm>
+      <developerConnection>scm:git:ssh://git@github.com/paion-data/athena.git</developerConnection>
+      <url>https://github.com/paion-data/athena.git</url>
+      <tag>HEAD</tag>
+  </scm>
+  ```
+
+#### A Complete Example POM
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.paiondata.athena</groupId>
+    <artifactId>athena-parent-pom</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>Athena: Parent POM</name>
+    <url>https://github.com/paiondata/athena</url>
+    <description>Athena: Parent POM</description>
+
+    <developers>
+        <developer>
+            <name>Jiaqi Liu</name>
+            <url>https://github.com/QubitPi</url>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <developerConnection>scm:git:ssh://git@github.com/paion-data/athena.git</developerConnection>
+        <url>https://github.com/paion-data/athena.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <doclint>none</doclint>  <!-- Turnoff all checks -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.4.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <tokenAuth>true</tokenAuth>
+                            <autoPublish>true</autoPublish>
+                            <publishingServerId>paion-data</publishingServerId>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                    <keyname>${gpg.keyname}</keyname>
+                                    <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
+```
+
+> [!NOTE]
+> Note that we've configured project above to use the [central-publishing-maven-plugin] and [Apache Maven GPG Plugin].
+> 
+> In addition, projects with packaging other than pom have to supply JAR files that contain Javadoc and sources. This 
+> allows the consumers of our artifacts to automatic access to Javadoc and sources for browsing as well as for display 
+> and navigation e.g. in their IDE.
+
+### Step 5 - Defining Action File
+
+Under regular `.github/workflows` directory, create a `.yml` file with a preferred name with the following example
+contents:
+
+```yaml
+---
+name: My App CI/CD
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:  
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release
+        uses: QubitPi/maven-central-release-action@master
+        with:
+          user: QubitPi
+          email: jack20220723@gmail.com
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          server-username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          server-password: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+```
+
+License
+-------
+
+The use and distribution terms for [maven-central-release-action] are covered by the [Apache License, Version 2.0].
+
+<div align="center">
+    <a href="https://opensource.org/licenses">
+        <img align="center" width="50%" alt="License Illustration" src="https://github.com/QubitPi/QubitPi/blob/master/img/apache-2.png?raw=true">
+    </a>
+</div>
+
+[Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
+[Apache License badge]: https://img.shields.io/badge/Apache%202.0-F25910.svg?style=for-the-badge&logo=Apache&logoColor=white
+[Apache License URL]: https://www.apache.org/licenses/LICENSE-2.0
+[Apache Maven GPG Plugin]: https://maven.apache.org/plugins/maven-gpg-plugin/usage.html#configure-passphrase-in-settings-xml-with-a-keyname
+
+[central-publishing-maven-plugin]: https://central.sonatype.com/artifact/org.sonatype.central/central-publishing-maven-plugin
+[Create a GitHub Secret]: https://docs.github.com/en/actions/security-guides/encrypted-secrets
+
+[GitHub Actions Marketplace badge]: https://img.shields.io/badge/View%20On%20Marketplace-2088FF?style=for-the-badge&logo=githubactions&logoColor=white
+[GitHub Actions Marketplace URL]: https://github.com/marketplace/actions/maven-central-release-action
+[GitHub Workflow Status badge]: https://img.shields.io/github/actions/workflow/status/QubitPi/maven-central-release-action/ci-cd.yml?branch=master&logo=github&style=for-the-badge
+[GitHub Workflow Status URL]: https://github.com/QubitPi/maven-central-release-action/actions/workflows/ci-cd.yml
+
+[maven-central-release-action]: https://github.com/QubitPi/maven-central-release-action
