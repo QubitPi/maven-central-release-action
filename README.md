@@ -23,6 +23,13 @@ git tag -a v1.0.0 -m "v1.0.0"
 git push origin v1.0.0
 ```
 
+> [!TIP]
+> When the release is done, the action will automatically create and push a new version tag of
+> `MAJOR`.`MINOR`.(`PATCH` + 1)
+>
+> Bumping the `MAJOR` or `MINOR` version still needs to be done manually using `git tag -a vx.x.x -m "vx.x.x"` command
+> given the assumption that agile software development will change patch version most frequently and almost always
+
 ### Step 2 - Create GPG Key
 
 One of the [requirements](https://central.sonatype.org/publish/requirements/) for publishing our artifacts to the
@@ -370,6 +377,9 @@ jobs:
           server-username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           server-password: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
 ```
+
+> [!NOTE]
+> More information can be found at [The Central Repository Documentation](https://central.sonatype.org/)
 
 License
 -------
