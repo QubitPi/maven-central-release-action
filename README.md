@@ -112,7 +112,8 @@ software artifact and validating a signature. Finally, we must provide a **passp
 is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and **gpg's
 private key** are all that is needed to sign artifacts with our signature.
 
-**[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
+> [!TIP]
+> **[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
 
 To export the private key, list it along with any other keys installed:
 
@@ -140,15 +141,17 @@ Next we [export an ascii armored version of the private key](https://unix.stacke
 gpg --output private.pgp --armor --export-secret-key CA925CD6C9E8D064FF05B4728190C4130ABA0F98
 ```
 
-**[Create a GitHub Secret] named *GPG_PRIVATE_KEY* whose value is the entire output the command above**
+> [!TIP]
+> **[Create a GitHub Secret] named *GPG_PRIVATE_KEY* whose value is the entire output the command above**
 
 ### Step 3 - Obtaining Maven Central Credentials
 
 It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials.
 We can get these credentials by generating a user token via the [Account page](https://central.sonatype.com/account).
 
-**[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
-**[Create a GitHub Secret] named *MAVEN_CENTRAL_TOKEN* whose value is the token password**
+> [!TIP]
+> - **[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
+> - **[Create a GitHub Secret] named *MAVEN_CENTRAL_TOKEN* whose value is the token password**
 
 ### Step 4 - Preparing POM File
 
