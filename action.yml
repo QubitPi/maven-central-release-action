@@ -51,7 +51,7 @@ runs:
       run: |
         git config --global user.name ${{ inputs.user }}
         git config --global user.email ${{ inputs.email }}
-        tag-for-release.bash
+        sh tag-for-release.bash
       shell: bash
 
     - name: Set up Java
