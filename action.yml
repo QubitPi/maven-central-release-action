@@ -33,6 +33,9 @@ inputs:
   email:
     description: The emails linked to the user on GitHub
     required: true
+  gpg-keyname:
+    description: The name of the GPG key to sign the released artifact
+    required: true
   gpg-private-key:
     description: GPG private key to import
     required: true
@@ -68,7 +71,7 @@ runs:
       with:
         java-version: ${{ inputs.java-version }}
         distribution: ${{ inputs.distribution }}
-        server-id: ossrh
+        server-id: ${{ inputs.gpg-keyname }}
         settings-path: ${{ github.workspace }}
         gpg-private-key: ${{ inputs.gpg-private-key }}
         gpg-passphrase: ${{ inputs.gpg-passphrase }}
@@ -88,7 +91,7 @@ runs:
         servers: >
           [
             {
-              "id": "ossrh",
+              "id": "${{ inputs.gpg-keyname }}",
               "username": "${{ inputs.server-username }}",
               "password": "${{ inputs.server-password }}",
               "passphrase": "${{ inputs.gpg-passphrase }}"
@@ -97,9 +100,9 @@ runs:
         profiles: >
           [
             {
-              "id": "ossrh",
+              "id": "${{ inputs.gpg-keyname }}",
               "properties": {
-                "gpg.keyname": "ossrh"
+                "gpg.keyname": "${{ inputs.gpg-keyname }}"
               },
               "activation": {
                 "activeByDefault": "true"
