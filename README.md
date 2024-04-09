@@ -39,8 +39,8 @@ verify signatures.
 
 #### Installing GnuPG
 
-[Download the binary of GnuPG](https//www.gnupg.org/download/) or install it with our favorite package manager and
-verify it by running a gpg command with the `--version` flag
+[Download the binary of GnuPG](https://gnupg.org/download/index.html#sec-1-2) or install it with our favorite package
+manager and verify it by running a gpg command with the `--version` flag
 
 ```console
 $ gpg --version
@@ -113,7 +113,8 @@ is essential that we choose a secure passphrase and that we do not divulge it to
 private key** are all that is needed to sign artifacts with our signature.
 
 > [!TIP]
-> **[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
+> - **[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
+> - **[Create a GitHub Secret] named *GPG_KEYNAME* whose value is like the "*Central Repo Test*" shown above**
 
 To export the private key, list it along with any other keys installed:
 
@@ -144,7 +145,31 @@ gpg --output private.pgp --armor --export-secret-key CA925CD6C9E8D064FF05B472819
 > [!TIP]
 > **[Create a GitHub Secret] named *GPG_PRIVATE_KEY* whose value is the entire output the command above**
 
-### Step 3 - Obtaining Maven Central Credentials
+### Step 3 - Distributing Public Key
+
+The maven-central-release-action would need the public key to verify the files, we want to distribute GPG public key to
+a key server:
+
+```console
+gpg --keyserver keyserver.ubuntu.com --send-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+```
+
+> [!IMPORTANT]
+> The GPG Keyservers supported by Central Servers are:
+> `keyserver.ubuntu.com`
+> `keys.openpgp.org`
+> `pgp.mit.edu`
+
+The `--keyserver` parameter identifies the target key server address. The `--send-keys` is the keyid of the key we want
+to distribute. We can get our keyid by [listing the public keys](#invalid-signature-for-file).
+
+Now the action can import our public key from the key server to CI/CD server:
+
+```console
+gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+```
+
+### Step 4 - Obtaining Maven Central Credentials
 
 It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials.
 We can get these credentials by generating a user token via the [Account page](https://central.sonatype.com/account).
@@ -153,7 +178,7 @@ We can get these credentials by generating a user token via the [Account page](h
 > - **[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
 > - **[Create a GitHub Secret] named *MAVEN_CENTRAL_TOKEN* whose value is the token password**
 
-### Step 4 - Preparing POM File
+### Step 5 - Preparing POM File
 
 As part of the deployment, we are required to submit a POM file. This is the Project Object Model file used by Apache
 Maven to define our project and its build. When building with other tools we have to assemble it and ensure it contains
@@ -217,11 +242,13 @@ the following information.
 
   ```xml
   <scm>
-      <developerConnection>scm:git:ssh://git@github.com/paion-data/athena.git</developerConnection>
-      <url>https://github.com/paion-data/athena.git</url>
+      <developerConnection>scm:git:ssh://git@github.com/github-username/repo-name.git</developerConnection>
+      <url>https://github.com/github-username/repo-name.git</url>
       <tag>HEAD</tag>
   </scm>
   ```
+
+  **Please modify the `github-username` and `repo-name` above accordinly**
 
 #### A Complete Example POM
 
@@ -310,7 +337,7 @@ the following information.
                         <configuration>
                             <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
-                            <publishingServerId>paion-data</publishingServerId>
+                            <publishingServerId>${gpg.keyname}</publishingServerId>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -349,7 +376,7 @@ the following information.
 > allows the consumers of our artifacts to automatic access to Javadoc and sources for browsing as well as for display
 > and navigation e.g. in their IDE.
 
-### Step 5 - Defining Action File
+### Step 6 - Defining Action File
 
 Under regular `.github/workflows` directory, create a `.yml` file with a preferred name with the following example
 contents:
@@ -366,7 +393,7 @@ name: My App CI/CD
 
 jobs:
   release:
-    name: Release
+    name: Release to Maven Central
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
@@ -375,6 +402,7 @@ jobs:
         with:
           user: QubitPi
           email: jack20220723@gmail.com
+          gpg-keyname: ${{ secrets.GPG_KEYNAME }}
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
           server-username: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -383,6 +411,75 @@ jobs:
 
 > [!NOTE]
 > More information can be found at [The Central Repository Documentation](https://central.sonatype.org/)
+
+Troubleshooting
+---------------
+
+### "Invalid signature for file"
+
+```console
+- Invalid signature for file: ***-v1.0.0-javadoc.jar
+- Invalid signature for file: ***-v1.0.0-sources.jar
+- Invalid signature for file: ***-v1.0.0-tests.jar
+- Invalid signature for file: ***-v1.0.0.jar
+- Invalid signature for file: ***-v1.0.0.pom
+```
+
+There could be multiple causes for this error. **Most likely one or more of the following GPG parameters are not
+specified correctly**:
+
+- **gpg-keyname**:
+- **gpg-private-key**
+- **gpg-passphrase**
+
+Please note that the `gpg-keyname` in the following example is *Central Repo Test*:
+
+```console
+$ gpg --list-keys
+/home/mylocaluser/.gnupg/pubring.kbx
+---------------------------------
+pub   rsa3072 2021-06-23 [SC] [expires: 2023-06-23]
+      CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+uid           [ultimate] Central Repo Test <central@example.com>
+sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
+```
+
+If everything seems correct, we could try deleting and [re-generating](#step-2---create-gpg-key) a new GPG key
+
+> [!TIP]
+> There are two types of GPG keys:
+>
+> 1. **Public keys** This type of key ensures data encryption and is used to validate the origin of a message. Public
+>    keys are meant to be shared openly as the message can be decrypted only with the corresponding private key.
+> 2. **Private keys** This type of key should be kept confidential for security reasons. A single private key is paired
+>    with a single public key counterpart and both are necessary for authentication and decryption.
+>
+> To list public keys in Linux, run:
+>
+> ```console
+> gpg --list-keys
+> ```
+>
+> To list private keys, use gpg with the --list-secret-keys option:
+>
+> ```console
+> gpg --list-secret-keys
+> ```
+>
+> To ensure successful key removal, **delete the private key first and then proceed with deleting the public key**:
+>
+> ```console
+> gpg --delete-secret-key CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+> gpg --delete-key CA925CD6C9E8D064FF05B4728190C4130ABA0F98
+> ```
+
+### keyserver send/receive failed
+
+[Try](https://unix.stackexchange.com/questions/361642/keyserver-receive-failed-on-every-keyserver-available#comment1032068_383783)
+
+```console
+sudo pkill dirmngr
+```
 
 License
 -------
