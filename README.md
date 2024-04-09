@@ -418,11 +418,11 @@ Troubleshooting
 ### "Invalid signature for file"
 
 ```console
-- Invalid signature for file: ***-v1.0.0-javadoc.jar
-- Invalid signature for file: ***-v1.0.0-sources.jar
-- Invalid signature for file: ***-v1.0.0-tests.jar
-- Invalid signature for file: ***-v1.0.0.jar
-- Invalid signature for file: ***-v1.0.0.pom
+- Invalid signature for file: ***-1.0.0-javadoc.jar
+- Invalid signature for file: ***-1.0.0-sources.jar
+- Invalid signature for file: ***-1.0.0-tests.jar
+- Invalid signature for file: ***-1.0.0.jar
+- Invalid signature for file: ***-1.0.0.pom
 ```
 
 There could be multiple causes for this error. **Most likely one or more of the following GPG parameters are not
