@@ -35,12 +35,14 @@ How to Use Maven Central Release Action
 
 ### Step 1 - Push Tag
 
-Manually create the first tag. For example, `v1.0.0`:
+Manually create the first tag **on `master` branch**. For example, `1.0.0`:
 
 ```console
-git tag -a v1.0.0 -m "v1.0.0"
-git push origin v1.0.0
+git tag -a 1.0.0 -m "1.0.0"
+git push origin 1.0.0
 ```
+
+*We recommend all-number version such as "1.0.0" as opposed to "v1.0.0"*
 
 > [!TIP]
 > When the release is done, the action will automatically create and push a new version tag of
