@@ -48,6 +48,13 @@ inputs:
   server-password:
     description: Maven Central token password
     required: true
+  version-properties:
+    description: |
+      The names of all properties (separated by comma, not white space between them) that contains the artifact version.
+      For example, we might have a POM property called
+      <properties><myproject.version>1.0-SNAPSHOT</myproject.version></properties>, then we will need to pass
+      "myproject.version" via this option in order to fully set the release properties
+    required: false
 
 runs:
   using: "composite"
@@ -60,9 +67,9 @@ runs:
         git config --global user.name ${{ inputs.user }}
         git config --global user.email ${{ inputs.email }}
 
-        git clone https://github.com/QubitPi/maven-central-release-action.git ../maven-central-release-action
-        cp ../maven-central-release-action/tag-for-release.bash .github/
-        cp ../maven-central-release-action/upversion.py .github/
+        git clone https://github.com/QubitPi/hashicorp-aws.git ../hashicorp-aws
+        cp ../hashicorp-aws/.github/version-bump/tag-for-release.bash .github/
+        cp ../hashicorp-aws/.github/version-bump/upversion.py .github/
         .github/tag-for-release.bash
       shell: bash
 
@@ -117,7 +124,12 @@ runs:
         VERSION=$(git describe)
         echo "INFO Last tag: $VERSION"
         mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
-        mvn versions:update-property -Dproperty=version.athena -DnewVersion=$VERSION -DgenerateBackupPoms=false
+
+        IFS=',' read -ra VERSION_PROPERTY <<< "${{ inputs.version-properties }}"
+        for p in "${VERSION_PROPERTY[@]}"; do
+          mvn versions:update-property -Dproperty=$p -DnewVersion=$VERSION -DgenerateBackupPoms=false
+        done
+
       shell: bash
     - name: Release
       run: mvn clean deploy -P release -DskipTests
