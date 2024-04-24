@@ -6,22 +6,24 @@ Maven Central Release Action
 [![Apache License][Apache License badge]][Apache License URL]
 
 <!-- TOC -->
-* [Maven Central Release Action](#maven-central-release-action)
-  * [Deploying Maven Artifacts to Maven Central in One Action](#deploying-maven-artifacts-to-maven-central-in-one-action)
-  * [How to Use Maven Central Release Action](#how-to-use-maven-central-release-action)
-    * [Step 1 - Push Tag](#step-1---push-tag)
-    * [Step 2 - Create GPG Key](#step-2---create-gpg-key)
-      * [Installing GnuPG](#installing-gnupg)
-      * [Generating a Key Pair](#generating-a-key-pair)
-    * [Step 3 - Distributing Public Key](#step-3---distributing-public-key)
-    * [Step 4 - Obtaining Maven Central Credentials](#step-4---obtaining-maven-central-credentials)
-    * [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
-      * [A Complete Example POM](#a-complete-example-pom)
-    * [Step 6 - Defining Action File](#step-6---defining-action-file)
-  * [Troubleshooting](#troubleshooting)
-    * ["Invalid signature for file"](#invalid-signature-for-file)
-    * [keyserver send/receive failed](#keyserver-sendreceive-failed)
-  * [License](#license)
+
+- [Maven Central Release Action](#maven-central-release-action)
+  - [Deploying Maven Artifacts to Maven Central in One Action](#deploying-maven-artifacts-to-maven-central-in-one-action)
+  - [How to Use Maven Central Release Action](#how-to-use-maven-central-release-action)
+    - [Step 1 - Push Tag](#step-1---push-tag)
+    - [Step 2 - Create GPG Key](#step-2---create-gpg-key)
+      - [Installing GnuPG](#installing-gnupg)
+      - [Generating a Key Pair](#generating-a-key-pair)
+    - [Step 3 - Distributing Public Key](#step-3---distributing-public-key)
+    - [Step 4 - Obtaining Maven Central Credentials](#step-4---obtaining-maven-central-credentials)
+    - [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
+      - [A Complete Example POM](#a-complete-example-pom)
+    - [Step 6 - Defining Action File](#step-6---defining-action-file)
+  - [Troubleshooting](#troubleshooting)
+    - ["Invalid signature for file"](#invalid-signature-for-file)
+    - [keyserver send/receive failed](#keyserver-sendreceive-failed)
+  - [License](#license)
+
 <!-- TOC -->
 
 Deploying Maven Artifacts to Maven Central in One Action
