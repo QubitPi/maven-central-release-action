@@ -19,6 +19,7 @@ Maven Central Release Action
     - [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
       - [A Complete Example POM](#a-complete-example-pom)
     - [Step 6 - Defining Action File](#step-6---defining-action-file)
+      - [Optional Parameters](#optional-parameters)
   - [Troubleshooting](#troubleshooting)
     - ["Invalid signature for file"](#invalid-signature-for-file)
     - [keyserver send/receive failed](#keyserver-sendreceive-failed)
