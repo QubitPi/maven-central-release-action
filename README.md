@@ -444,6 +444,20 @@ jobs:
 > [!NOTE]
 > More information can be found at [The Central Repository Documentation](https://central.sonatype.org/)
 
+#### Optional Parameters
+
+- `version-properties`: The names of all properties (separated by comma, not white space between them) that contains
+  the artifact version. For example, we might have a POM property called
+
+  ```yaml
+  <properties>
+      <myproject.version>1.0-SNAPSHOT</myproject.version>
+  </properties>
+  ```
+
+  then we will need to pass `myproject.version` via this option in order to fully set the release properties. Internally
+  the action utilizes [Versions Maven Plugin] to update all specified properties to the lastly tagged version
+
 Troubleshooting
 ---------------
 
@@ -538,3 +552,5 @@ The use and distribution terms for [maven-central-release-action] are covered by
 [GitHub Workflow Status URL]: https://github.com/QubitPi/maven-central-release-action/actions/workflows/ci-cd.yml
 
 [maven-central-release-action]: https://github.com/QubitPi/maven-central-release-action
+
+[Versions Maven Plugin]: https://www.mojohaus.org/versions/versions-maven-plugin/update-properties-mojo.html
