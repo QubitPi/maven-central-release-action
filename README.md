@@ -15,7 +15,7 @@ Maven Central Release Action
       - [Installing GnuPG](#installing-gnupg)
       - [Generating a Key Pair](#generating-a-key-pair)
     - [Step 3 - Distributing Public Key](#step-3---distributing-public-key)
-    - [Step 4 - Obtaining Maven Central Credentials](#step-4---obtaining-maven-central-credentials)
+    - [Step 4 - Configuring Maven Central Credentials](#step-4---configuring-maven-central-credentials)
     - [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
       - [A Complete Example POM](#a-complete-example-pom)
     - [Step 6 - Defining Action File](#step-6---defining-action-file)
@@ -202,10 +202,9 @@ Now the action can import our public key from the key server to CI/CD server:
 gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C4130ABA0F98
 ```
 
-### Step 4 - Obtaining Maven Central Credentials
+### Step 4 - Configuring Maven Central Credentials
 
-It's required to configure our `settings.xml` with our credentials. By default, this will expect our login credentials.
-We can get these credentials by generating a user token via the [Account page](https://central.sonatype.com/account).
+Releasing to Maven Central requires credentials by generating a user token via the [Maven Central account page].
 
 > [!TIP]
 > - **[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
@@ -528,6 +527,8 @@ If everything seems correct, we could try deleting and [re-generating](#step-2--
 sudo pkill dirmngr
 ```
 
+or [send GPG key online](https://keyserver.ubuntu.com/) (assuming `keyserver.ubuntu.com` keyserver)
+
 License
 -------
 
@@ -553,5 +554,6 @@ The use and distribution terms for [maven-central-release-action] are covered by
 [GitHub Workflow Status URL]: https://github.com/QubitPi/maven-central-release-action/actions/workflows/ci-cd.yml
 
 [maven-central-release-action]: https://github.com/QubitPi/maven-central-release-action
+[Maven Central account page]: https://central.sonatype.com/account
 
 [Versions Maven Plugin]: https://www.mojohaus.org/versions/versions-maven-plugin/update-properties-mojo.html
