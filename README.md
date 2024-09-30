@@ -3,7 +3,7 @@ Maven Central Release Action
 
 [![GitHub Actions Marketplace][GitHub Actions Marketplace badge]][GitHub Actions Marketplace URL]
 [![GitHub Workflow Status][GitHub Workflow Status badge]][GitHub Workflow Status URL]
-[![Apache License][Apache License badge]][Apache License URL]
+[![Apache License][Apache License badge]][Apache License, Version 2.0]
 
 <!-- TOC -->
 
@@ -446,6 +446,8 @@ jobs:
 
 #### Optional Parameters
 
+- `java-version`: The JDK version used to package up and deploy the artifact. Default to `17`
+- `distribution`: Java distribution. Default to `adopt`. See
 - `version-properties`: The names of all properties (separated by comma, not white space between them) that contains
   the artifact version. For example, we might have a POM property called
 
@@ -534,15 +536,8 @@ License
 
 The use and distribution terms for [maven-central-release-action] are covered by the [Apache License, Version 2.0].
 
-<div align="center">
-    <a href="https://opensource.org/licenses">
-        <img align="center" width="50%" alt="License Illustration" src="https://github.com/QubitPi/QubitPi/blob/master/img/apache-2.png?raw=true">
-    </a>
-</div>
-
-[Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
+[Apache License, Version 2.0]: https://www.apache.org/licenses/LICENSE-2.0
 [Apache License badge]: https://img.shields.io/badge/Apache%202.0-F25910.svg?style=for-the-badge&logo=Apache&logoColor=white
-[Apache License URL]: https://www.apache.org/licenses/LICENSE-2.0
 [Apache Maven GPG Plugin]: https://maven.apache.org/plugins/maven-gpg-plugin/usage.html#configure-passphrase-in-settings-xml-with-a-keyname
 
 [central-publishing-maven-plugin]: https://central.sonatype.com/artifact/org.sonatype.central/central-publishing-maven-plugin
