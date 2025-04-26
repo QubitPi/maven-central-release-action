@@ -253,11 +253,13 @@ the following information.
   <licenses>
       <license>
           <name>The Apache Software License, Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
       </license>
   </licenses>
   ```
+
+  For more info about license tag, please refer to the [POM reference](https://maven.apache.org/pom.html#Licenses)
 
 - **Developer Information** - In order to be able to associate the project it is required to add a developers section.
 
