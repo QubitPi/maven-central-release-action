@@ -6,31 +6,29 @@ Maven Central Release Action
 [![Apache License][Apache License badge]][Apache License, Version 2.0]
 
 <!-- TOC -->
-
-- [Maven Central Release Action](#maven-central-release-action)
-  - [Deploying Maven Artifacts to Maven Central in One Action](#deploying-maven-artifacts-to-maven-central-in-one-action)
-  - [How to Use Maven Central Release Action](#how-to-use-maven-central-release-action)
-    - [Step 1 - Push Tag](#step-1---push-tag)
-    - [Step 2 - Create GPG Key](#step-2---create-gpg-key)
-      - [Installing GnuPG](#installing-gnupg)
-      - [Generating a Key Pair](#generating-a-key-pair)
-    - [Step 3 - Distributing Public Key](#step-3---distributing-public-key)
-    - [Step 4 - Configuring Maven Central Credentials](#step-4---configuring-maven-central-credentials)
-    - [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
-      - [A Complete Example POM](#a-complete-example-pom)
-    - [Step 6 - Defining Action File](#step-6---defining-action-file)
-      - [Optional Parameters](#optional-parameters)
-  - [Troubleshooting](#troubleshooting)
-    - ["Invalid signature for file"](#invalid-signature-for-file)
-    - [keyserver send/receive failed](#keyserver-sendreceive-failed)
-  - [License](#license)
-
+* [Maven Central Release Action](#maven-central-release-action)
+  * [Deploying Maven Artifacts to Maven Central in One Action](#deploying-maven-artifacts-to-maven-central-in-one-action)
+  * [How to Use Maven Central Release Action](#how-to-use-maven-central-release-action)
+    * [Step 1 - Push Tag](#step-1---push-tag)
+    * [Step 2 - Create GPG Key](#step-2---create-gpg-key)
+      * [Installing GnuPG](#installing-gnupg)
+      * [Generating a Key Pair](#generating-a-key-pair)
+    * [Step 3 - Distributing Public Key](#step-3---distributing-public-key)
+    * [Step 4 - Configuring Maven Central Credentials](#step-4---configuring-maven-central-credentials)
+    * [Step 5 - Preparing POM File](#step-5---preparing-pom-file)
+      * [A Complete Example POM](#a-complete-example-pom)
+    * [Step 6 - Defining Action File](#step-6---defining-action-file)
+      * [Optional Parameters](#optional-parameters)
+  * [Troubleshooting](#troubleshooting)
+    * ["Invalid signature for file"](#invalid-signature-for-file)
+    * [keyserver send/receive failed](#keyserver-sendreceive-failed)
+  * [License](#license)
 <!-- TOC -->
 
 Deploying Maven Artifacts to Maven Central in One Action
 --------------------------------------------------------
 
-**Maven Central Release Action** offers a convenient "one-click" approach for publishing artifacts to
+__Maven Central Release Action__ offers a convenient "one-click" approach for publishing artifacts to
 [Maven Central](https://central.sonatype.com/)
 
 How to Use Maven Central Release Action
@@ -38,14 +36,14 @@ How to Use Maven Central Release Action
 
 ### Step 1 - Push Tag
 
-Manually create the first tag **on `master` branch**. For example, `1.0.0`:
+Manually create the first tag __on `master` branch__. For example, `1.0.0`:
 
 ```console
 git tag -a 1.0.0 -m "1.0.0"
 git push origin 1.0.0
 ```
 
-*We recommend all-number version such as "1.0.0" as opposed to "v1.0.0"*
+_We recommend all-number version such as "1.0.0" as opposed to "v1.0.0"_
 
 > [!TIP]
 > When the release is done, the action will automatically create and push a new version tag of
@@ -97,7 +95,7 @@ Enter our name and email when asked for it and also, the time of validity for th
 key is expired we can extend it, provided we own the key and therefore know the passphrase.
 
 > [!CAUTION]
-> Please keep in deep mind that **the GPG key name entered cannot contain white space!**
+> Please keep in deep mind that __the GPG key name entered cannot contain white space!__
 
 ```console
 $ gpg --gen-key
@@ -135,19 +133,19 @@ sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
 ```
 
 We have to provide our name and email. These identifiers are essential as they will be seen by anyone downloading a
-software artifact and validating a signature. Finally, we must provide a **passphrase** to protect our secret key. It
-is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and **gpg's
-private key** are all that is needed to sign artifacts with our signature.
+software artifact and validating a signature. Finally, we must provide a __passphrase__ to protect our secret key. It
+is essential that we choose a secure passphrase and that we do not divulge it to any one. This passphrase and __gpg's
+private key__ are all that is needed to sign artifacts with our signature.
 
 > [!TIP]
-> - **[Create a GitHub Secret] named *GPG_PASSPHRASE* whose value is the passphrase**
-> - **[Create a GitHub Secret] named *GPG_KEYNAME* whose value, in the example above, is the "*my-gpg-keyname*" shown
-> above**
+> - __[Create a GitHub Secret] named _GPG_PASSPHRASE_ whose value is the passphrase__
+> - __[Create a GitHub Secret] named _GPG_KEYNAME_ whose value, in the example above, is the "_my-gpg-keyname_" shown
+> above__
 
-Please keep in deep mind that **GPG_KEYNAME cannot contain white space!**
+Please keep in deep mind that __GPG_KEYNAME cannot contain white space!__
 
 > [!CAUTION]
-> Please allow me to press it again - keep in mind that **GPG_KEYNAME cannot contain white space!**
+> Please allow me to press it again - keep in mind that __GPG_KEYNAME cannot contain white space!__
 
 To export the private key, list it along with any other keys installed:
 
@@ -162,7 +160,7 @@ sub   rsa3072 2021-06-23 [E] [expires: 2023-06-23]
 ```
 
 The output displays the path to the public keyring file. The line starting with `pub` shows the size (rsa3072), the
-**keyid** (`CA925CD6C9E8D064FF05B4728190C4130ABA0F98`), and the creation date (2023-06-23) of the public key. Some
+__keyid__ (`CA925CD6C9E8D064FF05B4728190C4130ABA0F98`), and the creation date (2023-06-23) of the public key. Some
 values may vary depending on our GnuPG version, but we will definitely see the keyid or part of it (called shortID,
 last 8 characters of the keyid, in this example `0ABA0F98`, which we can ask gpg to output using
 `gpg --list-keys --keyid-format short`).
@@ -176,7 +174,7 @@ gpg --output private.pgp --armor --export-secret-key CA925CD6C9E8D064FF05B472819
 ```
 
 > [!TIP]
-> **[Create a GitHub Secret] named *GPG_PRIVATE_KEY* whose value is the entire output the command above**
+> __[Create a GitHub Secret] named _GPG_PRIVATE_KEY_ whose value is the entire output the command above__
 
 ### Step 3 - Distributing Public Key
 
@@ -207,8 +205,8 @@ gpg --keyserver keyserver.ubuntu.com --recv-keys CA925CD6C9E8D064FF05B4728190C41
 Releasing to Maven Central requires credentials by generating a user token via the [Maven Central account page].
 
 > [!TIP]
-> - **[Create a GitHub Secret] named *MAVEN_CENTRAL_USERNAME* whose value is the token username**
-> - **[Create a GitHub Secret] named *MAVEN_CENTRAL_TOKEN* whose value is the token password**
+> - __[Create a GitHub Secret] named _MAVEN_CENTRAL_USERNAME_ whose value is the token username__
+> - __[Create a GitHub Secret] named _MAVEN_CENTRAL_TOKEN_ whose value is the token password__
 
 ### Step 5 - Preparing POM File
 
@@ -216,11 +214,11 @@ As part of the deployment, we are required to submit a POM file. This is the Pro
 Maven to define our project and its build. When building with other tools we have to assemble it and ensure it contains
 the following information.
 
-- **Correct Coordinates**: The project coordinates, also known as GAV, coordinates determine the location of your
+- __Correct Coordinates__: The project coordinates, also known as GAV, coordinates determine the location of your
   project in the repository. The values are
 
   - `groupId`: the top level namespace level for our project starting with the reverse domain name
-  - `artifactId`: the unique *name* for our artifact
+  - `artifactId`: the unique _name_ for our artifact
   - `version`: the version string for our artifact
 
   The version can be an arbitrary string and can not end in `-SNAPSHOT`, since this is the reserved string used to
@@ -235,7 +233,7 @@ the following information.
   <version>1.4.7</version>
   ```
 
-- **Project Name, Description and URL**: For some human-readable information about our project and a pointer to our
+- __Project Name, Description and URL__: For some human-readable information about our project and a pointer to our
   project website for more, we need the presence of `name`, `description`, and `url`:
 
   ```xml
@@ -246,7 +244,7 @@ the following information.
   <url>http://www.example.com/example-application</url>
   ```
 
-- **License Information** - We need to declare the license(s) used for distributing our artifacts. E.g. if we use the
+- __License Information__ - We need to declare the license(s) used for distributing our artifacts. E.g. if we use the
   Apache License we can use
 
   ```xml
@@ -261,7 +259,7 @@ the following information.
 
   For more info about license tag, please refer to the [POM reference](https://maven.apache.org/pom.html#Licenses)
 
-- **Developer Information** - In order to be able to associate the project it is required to add a developers section.
+- __Developer Information__ - In order to be able to associate the project it is required to add a developers section.
 
   ```xml
   <developers>
@@ -272,7 +270,7 @@ the following information.
   </developers>
   ```
 
-- **SCM Information**
+- __SCM Information__
 
   ```xml
   <scm>
@@ -282,7 +280,7 @@ the following information.
   </scm>
   ```
 
-  **Please modify the `github-username` and `repo-name` above accordinly**
+  __Please modify the `github-username` and `repo-name` above accordinly__
 
 #### A Complete Example POM
 
@@ -312,7 +310,7 @@ the following information.
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -468,21 +466,21 @@ Troubleshooting
 ### "Invalid signature for file"
 
 ```console
-- Invalid signature for file: ***-1.0.0-javadoc.jar
-- Invalid signature for file: ***-1.0.0-sources.jar
-- Invalid signature for file: ***-1.0.0-tests.jar
-- Invalid signature for file: ***-1.0.0.jar
-- Invalid signature for file: ***-1.0.0.pom
+- Invalid signature for file: __*-1.0.0-javadoc.jar
+- Invalid signature for file: __*-1.0.0-sources.jar
+- Invalid signature for file: __*-1.0.0-tests.jar
+- Invalid signature for file: __*-1.0.0.jar
+- Invalid signature for file: __*-1.0.0.pom
 ```
 
-There could be multiple causes for this error. **Most likely one or more of the following GPG parameters are not
-specified correctly**:
+There could be multiple causes for this error. __Most likely one or more of the following GPG parameters are not
+specified correctly__:
 
-- **gpg-keyname**:
-- **gpg-private-key**
-- **gpg-passphrase**
+- __gpg-keyname__:
+- __gpg-private-key__
+- __gpg-passphrase__
 
-Please note that the `gpg-keyname` in the following example is *my-gpg-keyname*:
+Please note that the `gpg-keyname` in the following example is _my-gpg-keyname_:
 
 ```console
 $ gpg --list-keys
@@ -499,9 +497,9 @@ If everything seems correct, we could try deleting and [re-generating](#step-2--
 > [!TIP]
 > There are two types of GPG keys:
 >
-> 1. **Public keys** This type of key ensures data encryption and is used to validate the origin of a message. Public
+> 1. __Public keys__ This type of key ensures data encryption and is used to validate the origin of a message. Public
 >    keys are meant to be shared openly as the message can be decrypted only with the corresponding private key.
-> 2. **Private keys** This type of key should be kept confidential for security reasons. A single private key is paired
+> 2. __Private keys__ This type of key should be kept confidential for security reasons. A single private key is paired
 >    with a single public key counterpart and both are necessary for authentication and decryption.
 >
 > To list public keys in Linux, run:
@@ -516,7 +514,7 @@ If everything seems correct, we could try deleting and [re-generating](#step-2--
 > gpg --list-secret-keys
 > ```
 >
-> To ensure successful key removal, **delete the private key first and then proceed with deleting the public key**:
+> To ensure successful key removal, __delete the private key first and then proceed with deleting the public key__:
 >
 > ```console
 > gpg --delete-secret-key CA925CD6C9E8D064FF05B4728190C4130ABA0F98
